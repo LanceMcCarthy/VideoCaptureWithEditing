@@ -1,7 +1,5 @@
 Video Capture with Media Editing demo
 
-This is the accompanying code demo for Windows Blog post
-
 --- 
 
 ### Recording Page
