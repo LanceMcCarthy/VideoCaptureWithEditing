@@ -33,8 +33,6 @@ namespace VideoCaptureWithEditing.Views
 {
     public sealed partial class PlaybackPage : Page
     {
-        private bool isPlaying;
-
         public PlaybackPage()
         {
             InitializeComponent();
@@ -52,35 +50,11 @@ namespace VideoCaptureWithEditing.Views
                 HeaderTextBlock.Text = videoFile.DisplayName;
             }
         }
-
-        private void PlayPauseButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (isPlaying)
-                PlaybackMediaElement.Pause();
-            else
-                PlaybackMediaElement.Play();
-        }
-
-        private void PlaybackMediaElement_OnCurrentStateChanged(object sender, RoutedEventArgs e)
-        {
-            switch (PlaybackMediaElement.CurrentState)
-            {
-                case MediaElementState.Playing:
-                    isPlaying = true;
-                    PlayPauseButton.Label = "pause";
-                    PlayPauseButton.Icon = new SymbolIcon(Symbol.Pause);
-                    break;
-                case MediaElementState.Paused:
-                    isPlaying = false;
-                    PlayPauseButton.Label = "play";
-                    PlayPauseButton.Icon = new SymbolIcon(Symbol.Play);
-                    break;
-            }
-        }
-
+        
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             PlaybackMediaElement.Stop();
+            PlaybackMediaElement.Source = null;
             base.OnNavigatedFrom(e);
         }
     }

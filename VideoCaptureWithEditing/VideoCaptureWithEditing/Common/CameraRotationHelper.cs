@@ -22,6 +22,8 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
+// See https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/CameraStarterKit for more examples
+
 using System;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Sensors;
@@ -63,7 +65,7 @@ namespace VideoCaptureWithEditing.Common
         /// <summary>
         /// Gets the rotation to rotate ui elements
         /// </summary>
-        public SimpleOrientation GetUIOrientation()
+        public SimpleOrientation GetUiOrientation()
         {
             if (IsEnclosureLocationExternal(cameraEnclosureLocation))
             {

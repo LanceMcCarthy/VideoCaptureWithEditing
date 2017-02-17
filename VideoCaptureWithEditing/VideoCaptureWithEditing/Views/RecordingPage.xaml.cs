@@ -22,7 +22,7 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
-// Code reused from https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/CameraStarterKit
+// See https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/CameraStarterKit for more examples
 
 using System;
 using System.Diagnostics;
@@ -184,7 +184,7 @@ namespace VideoCaptureWithEditing.Views
         private void UpdateButtonOrientation()
         {
             // Rotate the buttons in the UI to match the rotation of the device
-            var angle = CameraRotationHelper.ConvertSimpleOrientationToClockwiseDegrees(rotationHelper.GetUIOrientation());
+            var angle = CameraRotationHelper.ConvertSimpleOrientationToClockwiseDegrees(rotationHelper.GetUiOrientation());
             var transform = new RotateTransform { Angle = angle };
 
             // The RenderTransform is safe to use (i.e. it won't cause layout issues) in this case, because these buttons have a 1:1 aspect ratio

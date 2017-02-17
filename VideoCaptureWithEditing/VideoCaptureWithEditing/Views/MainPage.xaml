@@ -1,7 +1,6 @@
 ﻿<Page x:Class="VideoCaptureWithEditing.Views.MainPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="using:VideoCaptureWithEditing"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:storage="using:Windows.Storage"
@@ -17,7 +16,7 @@
         <Grid Background="{ThemeResource ApplicationForegroundThemeBrush}">
             <TextBlock Text="Videos"
                        HorizontalAlignment="Center"
-                       Style="{StaticResource HeaderTextBlockStyle}"
+                       Style="{StaticResource TitleTextBlockStyle}"
                        Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"/>
         </Grid>
         
@@ -42,12 +41,19 @@
                           Icon="Add"
                           Label="new video"
                           Click="RecordVideoButton_OnClick" />
+            <AppBarButton x:Name="DeleteVideoButton"
+                          Icon="Delete"
+                          Label="delete"
+                          IsEnabled="False"
+                          Click="DeleteVideoButton_OnClick" />
             <AppBarButton x:Name="PlayVideoButton"
                           Icon="Play"
+                          IsEnabled="False"
                           Label="watch video"
                           Click="PlayVideoButton_OnClick"/>
             <AppBarButton x:Name="EditVideoButton"
                           Icon="Trim"
+                          IsEnabled="False"
                           Label="edit video"
                           Click="EditVideoButton_OnClick" />
         </CommandBar>

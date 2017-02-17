@@ -17,15 +17,15 @@
 
         <Grid Background="{ThemeResource ApplicationForegroundThemeBrush}">
             <TextBlock x:Name="StatusTextBlock"
+                       Text="Editing"
+                       Style="{StaticResource TitleTextBlockStyle}"
                        Foreground="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                       Text="Status"
                        HorizontalAlignment="Center" />
         </Grid>
 
-        <Grid x:Name="EditingControlsGrid"
-              Grid.Row="1">
+        <Grid Grid.Row="1">
             <Slider x:Name="EndTrimSlider"
-                    Header="Trim the end of the video (in milliseconds)"
+                    Header="Trim the end of the video"
                     IsDirectionReversed="True"
                     Margin="20,0" />
         </Grid>
@@ -37,9 +37,7 @@
                       AreTransportControlsEnabled="True"
                       Grid.Row="2" />
 
-        <CommandBar Grid.Row="3"
-                    HorizontalContentAlignment="Left"
-                    VerticalContentAlignment="Top">
+        <CommandBar Grid.Row="3">
             <AppBarButton x:Name="TrimClipButton"
                     Icon="Trim"
                     Click="TrimClip_Click"

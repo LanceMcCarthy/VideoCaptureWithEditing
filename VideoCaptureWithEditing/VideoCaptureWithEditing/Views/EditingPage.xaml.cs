@@ -22,9 +22,10 @@
 //  THE SOFTWARE.
 //  ---------------------------------------------------------------------------------
 
-// Code reused from https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/MediaEditing
+// See https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/MediaEditing for more examples
 
 using System;
+using System.Linq;
 using Windows.Foundation;
 using Windows.Media.Core;
 using Windows.Media.Editing;
@@ -73,6 +74,8 @@ namespace VideoCaptureWithEditing.Views
 
                 // Create the media source and assign it to the media player
                 mediaStreamSource = composition.GeneratePreviewMediaStreamSource((int)EditorMediaElement.ActualWidth, (int)EditorMediaElement.ActualHeight);
+
+                // Set the MediaElement's source
                 EditorMediaElement.SetMediaStreamSource(mediaStreamSource);
 
                 TrimClipButton.IsEnabled = true;
@@ -81,7 +84,9 @@ namespace VideoCaptureWithEditing.Views
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            // Clean up
             EditorMediaElement.Source = null;
+            composition = null;
             mediaStreamSource = null;
             base.OnNavigatedFrom(e);
         }
@@ -92,7 +97,7 @@ namespace VideoCaptureWithEditing.Views
             // Get the first clip in the MediaComposition
             // We know this beforehand because it's the only clip in the composition
             // that we created from the passed video file
-            var clip = composition.Clips[0];
+            MediaClip clip = composition.Clips.FirstOrDefault();
 
             // Trim the end of the clip (you can use TrimTimeFromStart to trim from the beginning)
             clip.TrimTimeFromEnd = TimeSpan.FromMilliseconds((long)EndTrimSlider.Value);
@@ -102,6 +107,8 @@ namespace VideoCaptureWithEditing.Views
 
             // Update the video source with the trimmed clip
             mediaStreamSource = composition.GeneratePreviewMediaStreamSource((int)EditorMediaElement.ActualWidth, (int)EditorMediaElement.ActualHeight);
+
+            // Set the MediaElement's source
             EditorMediaElement.SetMediaStreamSource(mediaStreamSource);
 
             // Update the UI
@@ -116,12 +123,12 @@ namespace VideoCaptureWithEditing.Views
             EnableButtons(false);
             StatusTextBlock.Text = "Creating new file...";
 
-            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync($"Edited Video {DateTime.Now:D}.mp4", CreationCollisionOption.ReplaceExisting);
+            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync($"Edited Video {DateTime.Now:D}.mp4");
             
             if (file != null)
             {
                 var saveOperation = composition.RenderToFileAsync(file, MediaTrimmingPreference.Precise);
-
+                
                 // This will show progress as video is rendered and saved
                 saveOperation.Progress = async (info, progress) =>
                 {
@@ -131,7 +138,7 @@ namespace VideoCaptureWithEditing.Views
                     });
                 };
 
-                // when the operation is complete
+                // This fires when the operation is complete
                 saveOperation.Completed = async (info, status) =>
                 {
                     await this.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
@@ -171,6 +178,5 @@ namespace VideoCaptureWithEditing.Views
             SaveButton.IsEnabled = isEnabled;
             TrimClipButton.IsEnabled = isEnabled;
         }
-        
     }
 }

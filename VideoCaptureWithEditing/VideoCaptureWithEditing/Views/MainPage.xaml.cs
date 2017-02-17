@@ -24,8 +24,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -35,11 +37,83 @@ namespace VideoCaptureWithEditing.Views
 {
     public sealed partial class MainPage : Page
     {
+        private readonly ObservableCollection<StorageFile> videoFiles;
         private StorageFile selectedVideoFile;
 
         public MainPage()
         {
             InitializeComponent();
+
+            // Set up ListView
+            videoFiles = new ObservableCollection<StorageFile>();
+            VideosListView.ItemsSource = videoFiles;
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            await CheckForVideosAsync();
+
+            base.OnNavigatedTo(e);
+        }
+
+        private async Task CheckForVideosAsync()
+        {
+            try
+            {
+                // Checking for .mp4 files in LocalFolder
+                var localFolderFiles = await ApplicationData.Current.LocalFolder.GetFilesAsync();
+
+                // Create a list for any results
+                videoFiles.Clear();
+
+                // If there are any mp4 videos add them to the videoFiles list
+                foreach (var file in localFolderFiles)
+                {
+                    if (file.FileType == ".mp4")
+                    {
+                        videoFiles.Add(file);
+                    }
+                }
+
+                // If there were any videos, preselect the first one inthe ListView
+                if (videoFiles.Count > 0)
+                    VideosListView.SelectedIndex = 0;
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+            }
+        }
+
+        private void VideosListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                // If a video was selected enable the buttons
+                if (e.AddedItems.Count > 0)
+                {
+                    var videoFile = e.AddedItems.FirstOrDefault() as StorageFile;
+
+                    if (videoFile != null)
+                    {
+                        selectedVideoFile = videoFile;
+                        PlayVideoButton.IsEnabled = true;
+                        EditVideoButton.IsEnabled = true;
+                        DeleteVideoButton.IsEnabled = true;
+                        return;
+                    }
+                }
+
+                // Disable the buttons if a video was not selected
+                selectedVideoFile = null;
+                PlayVideoButton.IsEnabled = false;
+                EditVideoButton.IsEnabled = false;
+                DeleteVideoButton.IsEnabled = false;
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+            }
         }
 
         private void RecordVideoButton_OnClick(object sender, RoutedEventArgs e)
@@ -63,53 +137,20 @@ namespace VideoCaptureWithEditing.Views
             Frame.Navigate(typeof(PlaybackPage), selectedVideoFile);
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        private async void DeleteVideoButton_OnClick(object sender, RoutedEventArgs e)
         {
             try
             {
-                var localFolder = ApplicationData.Current.LocalFolder;
-            
-                var localFolderFiles = await localFolder.GetFilesAsync();
+                await selectedVideoFile.DeleteAsync(StorageDeleteOption.PermanentDelete);
 
-                var videoFiles = new List<StorageFile>();
+                selectedVideoFile = null;
 
-                foreach (var file in localFolderFiles)
-                {
-                    if (file.FileType == ".mp4")
-                    {
-                        videoFiles.Add(file);
-                    }
-                }
-
-                VideosListView.ItemsSource = videoFiles;
+                await CheckForVideosAsync();
             }
             catch (Exception exception)
             {
                 Debug.WriteLine(exception);
             }
-            
-            base.OnNavigatedTo(e);
-        }
-
-        private void VideosListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count > 0)
-            {
-                var videoFile = e.AddedItems.FirstOrDefault() as StorageFile;
-
-                if (videoFile != null)
-                {
-                    selectedVideoFile = videoFile;
-                    PlayVideoButton.IsEnabled = true;
-                    EditVideoButton.IsEnabled = true;
-                    return;
-                }
-            }
-
-            // All other conditions means the video was unselected or is null
-            selectedVideoFile = null;
-            PlayVideoButton.IsEnabled = false;
-            EditVideoButton.IsEnabled = false;
         }
     }
 }
