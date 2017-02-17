@@ -1,33 +1,31 @@
 Video Capture with Media Editing demo
 
-This is the accompanying code demo for Windows Blog post
-
 --- 
 
 ### Recording Page
 
-![alt tag](VideoCaptureWithEditing/Screenshots/RecordingPage.png)
+![alt tag](Screenshots/RecordingPage.png)
 
 
 ---
 
 ### Media Editing Page
 
-![alt tag](VideoCaptureWithEditing/Screenshots/EditingPage.png)
+![alt tag](Screenshots/EditingPage.png)
 
 
 --- 
 
 ### Playback Page
 
-![alt tag](VideoCaptureWithEditing/Screenshots/PlaybackPage.png)
+![alt tag](Screenshots/PlaybackPage.png)
 
 
 --- 
 
 ### Main Page
 
-![alt tag](VideoCaptureWithEditing/Screenshots/MainPage.png)
+![alt tag](Screenshots/MainPage.png)
 
 
 --- 
