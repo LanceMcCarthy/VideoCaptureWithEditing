@@ -465,7 +465,20 @@ namespace VideoCaptureWithEditing.Views
         {
             // Get available devices for capturing pictures
             var allVideoDevices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+            
+            // Write out all discovered device info to debug output
+            foreach (var videoDevice in allVideoDevices)
+            {
+                Debug.WriteLine($"\n********* Properties for {videoDevice?.Name} **********");
 
+                foreach (var prop in videoDevice?.Properties)
+                {
+                    Debug.WriteLine($"Key: {prop.Key}, Value: {prop.Value}");
+                }
+
+                Debug.WriteLine($"*********************************************************\n");
+            }
+            
             // Get the desired camera by panel
             DeviceInformation desiredDevice = allVideoDevices.FirstOrDefault(x => x.EnclosureLocation != null && x.EnclosureLocation.Panel == desiredPanel);
 
