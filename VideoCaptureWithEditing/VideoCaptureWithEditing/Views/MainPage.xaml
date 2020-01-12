@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:storage="using:Windows.Storage"
+      xmlns:controls="using:VideoCaptureWithEditing.Controls"
       mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -26,12 +27,7 @@
                   Grid.Row="1">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="storage:StorageFile">
-                    <StackPanel Margin="0,0,0,10">
-                        <TextBlock Text="{x:Bind Name}"
-                                   Style="{StaticResource TitleTextBlockStyle}" />
-                        <TextBlock Text="{x:Bind DateCreated}"
-                                   Style="{StaticResource SubtitleTextBlockStyle}"/>
-                    </StackPanel>
+                    <controls:VidItem DataContext="{Binding }"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

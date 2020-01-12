@@ -1,30 +1,4 @@
-﻿//  ---------------------------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation.  All rights reserved.
-// 
-//  The MIT License (MIT)
-// 
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-// 
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-// 
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
-//  ---------------------------------------------------------------------------------
-
-// See https://github.com/Microsoft/Windows-universal-samples/tree/master/Samples/CameraStarterKit for more examples
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,37 +23,21 @@ namespace VideoCaptureWithEditing.Views
 {
     public sealed partial class RecordingPage : Page
     {
-        // Rotation metadata to apply to the preview stream and recorded videos (MF_MT_VIDEO_ROTATION)
-        // Reference: http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh868174.aspx
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
-
-        // Folder in which the captures will be stored (initialized in SetupUiAsync)
         private readonly StorageFolder localFolder;
-
-        // Prevent the screen from sleeping while the camera is running
         private readonly DisplayRequest displayRequest;
-
-        // For listening to media property changes
         private readonly SystemMediaTransportControls systemMediaControls;
-
-        // MediaCapture and its state variables
+        private CameraRotationHelper rotationHelper;
         private MediaCapture mediaCapture;
         private bool isInitialized;
         private bool isPreviewing;
         private bool isRecording;
-
-        // UI state
         private bool isSuspending;
         private bool isActivePage;
         private bool isUiActive;
         private Task setupTask = Task.CompletedTask;
-
-        // Information about the camera device
         private bool mirroringPreview;
         private bool externalCamera;
-
-        // Rotation Helper to simplify handling rotation compensation for the camera streams
-        private CameraRotationHelper rotationHelper;
 
         public RecordingPage()
         {
@@ -97,10 +55,6 @@ namespace VideoCaptureWithEditing.Views
         
         #region MediaCapture methods
 
-        /// <summary>
-        /// Initializes the MediaCapture, registers events, gets camera device information for mirroring and rotating, starts preview and unlocks the UI
-        /// </summary>
-        /// <returns></returns>
         private async Task InitializeCameraAsync()
         {
             Debug.WriteLine("InitializeCameraAsync");
@@ -165,9 +119,6 @@ namespace VideoCaptureWithEditing.Views
             }
         }
 
-        /// <summary>
-        /// Handles an orientation changed event
-        /// </summary>
         private async void RotationHelper_OrientationChanged(object sender, bool updatePreview)
         {
             if (updatePreview)
@@ -177,10 +128,6 @@ namespace VideoCaptureWithEditing.Views
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => UpdateButtonOrientation());
         }
 
-        /// <summary>
-        /// Uses the current device orientation in space and page orientation on the screen to calculate the rotation
-        /// transformation to apply to the controls
-        /// </summary>
         private void UpdateButtonOrientation()
         {
             // Rotate the buttons in the UI to match the rotation of the device
@@ -191,10 +138,6 @@ namespace VideoCaptureWithEditing.Views
             VideoButton.RenderTransform = transform;
         }
 
-        /// <summary>
-        /// Starts the preview and adjusts it for for rotation and mirroring after making a request to keep the screen on
-        /// </summary>
-        /// <returns></returns>
         private async Task StartPreviewAsync()
         {
             // Prevent the device from sleeping while the preview is running
@@ -215,9 +158,6 @@ namespace VideoCaptureWithEditing.Views
             }
         }
 
-        /// <summary>
-        /// Gets the current orientation of the UI in relation to the device (when AutoRotationPreferences cannot be honored) and applies a corrective rotation to the preview
-        /// </summary>
         private async Task SetPreviewRotationAsync()
         {
             // Only need to update the orientation if the camera is mounted on the device
@@ -230,10 +170,6 @@ namespace VideoCaptureWithEditing.Views
             await mediaCapture.SetEncodingPropertiesAsync(MediaStreamType.VideoPreview, props, null);
         }
 
-        /// <summary>
-        /// Stops the preview and deactivates a display request, to allow the screen to go into power saving modes
-        /// </summary>
-        /// <returns></returns>
         private async Task StopPreviewAsync()
         {
             // Stop the preview
@@ -250,17 +186,11 @@ namespace VideoCaptureWithEditing.Views
                 displayRequest.RequestRelease();
             });
         }
-        
-        /// <summary>
-        /// Records an MP4 video to a StorageFile and adds rotation metadata to it
-        /// </summary>
-        /// <returns></returns>
+
         private async Task StartRecordingAsync()
         {
             try
             {
-
-                // Create storage file for the capture
                 var videoFile = await localFolder.CreateFileAsync($"Video {DateTime.Now:D}.mp4", CreationCollisionOption.GenerateUniqueName);
 
                 var encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
@@ -271,6 +201,7 @@ namespace VideoCaptureWithEditing.Views
 
                 Debug.WriteLine("Starting recording to " + videoFile.Path);
 
+                // TODO Rafael - File Sink
                 await mediaCapture.StartRecordToStorageFileAsync(encodingProfile, videoFile);
 
                 isRecording = true;
@@ -284,16 +215,13 @@ namespace VideoCaptureWithEditing.Views
             }
         }
 
-        /// <summary>
-        /// Stops recording a video
-        /// </summary>
-        /// <returns></returns>
         private async Task StopRecordingAsync()
         {
             Debug.WriteLine("Stopping recording...");
 
             isRecording = false;
 
+            // TODO Rafael - end File sink
             await mediaCapture.StopRecordAsync();
 
             Debug.WriteLine("Stopped recording!");
@@ -302,17 +230,12 @@ namespace VideoCaptureWithEditing.Views
                 Frame.GoBack();
         }
 
-        /// <summary>
-        /// Cleans up the camera resources (after stopping any video recording and/or preview if necessary) and unregisters from MediaCapture events
-        /// </summary>
-        /// <returns></returns>
         private async Task CleanupCameraAsync()
         {
             Debug.WriteLine("CleanupCameraAsync");
 
             if (isInitialized)
             {
-                // If a recording is in progress during cleanup, stop it to save the recording
                 if (isRecording)
                 {
                     await StopRecordingAsync();
@@ -320,9 +243,6 @@ namespace VideoCaptureWithEditing.Views
 
                 if (isPreviewing)
                 {
-                    // The call to stop the preview is included here for completeness, but can be
-                    // safely removed if a call to MediaCapture.Dispose() is being made later,
-                    // as the preview will be automatically stopped at that point
                     await StopPreviewAsync();
                 }
 
@@ -348,11 +268,6 @@ namespace VideoCaptureWithEditing.Views
         
         #region Helper functions
 
-        /// <summary>
-        /// Initialize or clean up the camera and our UI,
-        /// depending on the page state.
-        /// </summary>
-        /// <returns></returns>
         private async Task SetUpBasedOnStateAsync()
         {
             // Avoid reentrancy: Wait until nobody else is in this function.
@@ -390,10 +305,6 @@ namespace VideoCaptureWithEditing.Views
             await setupTask;
         }
 
-        /// <summary>
-        /// Attempts to lock the page orientation, hide the StatusBar (on Phone) and registers event handlers for hardware buttons and orientation sensors
-        /// </summary>
-        /// <returns></returns>
         private async Task SetupUiAsync()
         {
             // Attempt to lock page to landscape orientation to prevent the CaptureElement from rotating, as this gives a better experience
@@ -409,10 +320,6 @@ namespace VideoCaptureWithEditing.Views
             
         }
 
-        /// <summary>
-        /// Unregisters event handlers for hardware buttons and orientation sensors, allows the StatusBar (on Phone) to show, and removes the page orientation lock
-        /// </summary>
-        /// <returns></returns>
         private async Task CleanupUiAsync()
         {
             UnregisterEventHandlers();
@@ -427,9 +334,6 @@ namespace VideoCaptureWithEditing.Views
             DisplayInformation.AutoRotationPreferences = DisplayOrientations.None;
         }
 
-        /// <summary>
-        /// This method will update the icons, enable/disable and show/hide the photo/video buttons depending on the current state of the app and the capabilities of the device
-        /// </summary>
         private void UpdateCaptureControls()
         {
             // The buttons should only be enabled if the preview started sucessfully
@@ -440,27 +344,16 @@ namespace VideoCaptureWithEditing.Views
             StopRecordingIcon.Visibility = isRecording ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        /// <summary>
-        /// Registers event handlers for hardware buttons and orientation sensors, and performs an initial update of the UI rotation
-        /// </summary>
         private void RegisterEventHandlers()
         {
             systemMediaControls.PropertyChanged += SystemMediaControls_PropertyChanged;
         }
 
-        /// <summary>
-        /// Unregisters event handlers for hardware buttons and orientation sensors
-        /// </summary>
         private void UnregisterEventHandlers()
         {
             systemMediaControls.PropertyChanged -= SystemMediaControls_PropertyChanged;
         }
 
-        /// <summary>
-        /// Attempts to find and return a device mounted on the panel specified, and on failure to find one it will return the first device listed
-        /// </summary>
-        /// <param name="desiredPanel">The desired panel on which the returned device should be mounted, if available</param>
-        /// <returns></returns>
         private static async Task<DeviceInformation> FindCameraDeviceByPanelAsync(Windows.Devices.Enumeration.Panel desiredPanel)
         {
             // Get available devices for capturing pictures
